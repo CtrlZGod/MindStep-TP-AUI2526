@@ -5,18 +5,15 @@ import androidx.room.Insert
 import androidx.room.Query
 import kotlinx.coroutines.flow.Flow
 
-// A anotação @Dao diz ao Room que este é o nosso "funcionário" do arquivo
 @Dao
 interface MoodRecordDao {
 
-    // Ordem 1: Inserir um novo registo
-    // O Room trata de guardar a informação. Se houver um conflito, ele substitui.
+    // Removemos o 'suspend' e o ': Long' para fugir aos bugs do KSP.
+    // Mais tarde (no ViewModel), vamos garantir que esta gravação é feita em segundo plano!
     @Insert
-    suspend fun insertRecord(record: MoodRecord) //"suspend" porque é uma operação que pode demorar (acesso à base de dados)
+    fun insertRecord(record: MoodRecord)
 
-    // Ordem 2: Ler todos os registos
-    // O @Query permite-nos fazer um pedido (uma "query") à base de dados.
-    // Usamos o "ORDER BY timestamp DESC" para mostrar os mais recentes primeiro.
+    // A leitura com Flow continua igual (esta não costuma dar problemas)
     @Query("SELECT * FROM mood_records ORDER BY timestamp DESC")
     fun getAllRecords(): Flow<List<MoodRecord>>
 }
