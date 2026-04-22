@@ -29,11 +29,11 @@ fun AddRecordScreen(
     val haptic = LocalHapticFeedback.current
 
     val moodOptions = listOf(
-        Pair("😢", "Muito Triste"),
-        Pair("🙁", "Triste"),
-        Pair("😐", "Neutro"),
-        Pair("🙂", "Feliz"),
-        Pair("😁", "Muito Feliz")
+        Pair("😢", "Muito Mal"),
+        Pair("🙁", "Mal"),
+        Pair("😐", "Normal"),
+        Pair("🙂", "Bem"),
+        Pair("😁", "Muito Bem")
     )
 
     Column(
@@ -43,7 +43,7 @@ fun AddRecordScreen(
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        // --- 1. HUMOR ---
+        //Humor
         Text(text = "Como te sentes hoje?", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(24.dp))
 
@@ -74,7 +74,7 @@ fun AddRecordScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // --- 2. ANSIEDADE ---
+        //Ansiedade
         Text(text = "Nível de Ansiedade: $anxietyLevel", style = MaterialTheme.typography.titleMedium)
 
         Slider(
@@ -94,7 +94,7 @@ fun AddRecordScreen(
 
         Spacer(modifier = Modifier.height(40.dp))
 
-        // --- 3. NOTAS ---
+        //Notas
         OutlinedTextField(
             value = notes,
             onValueChange = { notes = it },
@@ -109,7 +109,7 @@ fun AddRecordScreen(
 
         Spacer(modifier = Modifier.weight(1f))
 
-        // --- 4. GUARDAR ---
+        //Guardar
         Button(
             onClick = { onSaveRecord(moodLevel, anxietyLevel, notes) },
             modifier = Modifier

@@ -24,12 +24,11 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // 1. Inicializa a Base de Dados e o DAO
+
+            //base de dados e viewmodel
             val context = LocalContext.current
             val database = MindStepDatabase.getDatabase(context)
             val dao = database.moodRecordDao()
-
-            // 2. Prepara o ViewModel (fornecendo o DAO que ele precisa)
             val viewModelFactory = object : ViewModelProvider.Factory {
                 override fun <T : ViewModel> create(modelClass: Class<T>): T {
                     @Suppress("UNCHECKED_CAST")
@@ -38,7 +37,7 @@ class MainActivity : ComponentActivity() {
             }
             val mindStepViewModel: MindStepViewModel = viewModel(factory = viewModelFactory)
 
-            // 3. Arranca a App passando o ViewModel
+            //trigger da UI principal
             MindStepApp(mindStepViewModel)
         }
     }
@@ -47,7 +46,6 @@ class MainActivity : ComponentActivity() {
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun MindStepApp(viewModel: MindStepViewModel) {
-    // Variável que controla a navegação básica (Que ecrã mostrar?)
     var currentScreen by remember { mutableStateOf("home") }
 
     Scaffold(
@@ -64,14 +62,13 @@ fun MindStepApp(viewModel: MindStepViewModel) {
                 )
                 NavigationBarItem(
                     selected = false,
-                    onClick = { /* Futuro: Ecrã de Perfil/Estatísticas */ },
+                    onClick = {  },
                     icon = { Icon(Icons.Default.Person, contentDescription = "Ver Perfil") },
                     label = { Text("Perfil") }
                 )
             }
         },
         floatingActionButton = {
-            // Só mostramos o botão de adicionar se estivermos no ecrã inicial
             if (currentScreen == "home") {
                 FloatingActionButton(onClick = { currentScreen = "add_record" }) {
                     Icon(Icons.Default.Add, contentDescription = "Registar Humor de Hoje")
@@ -80,13 +77,12 @@ fun MindStepApp(viewModel: MindStepViewModel) {
         }
     ) { innerPadding ->
 
-        // Área central do ecrã
+        //area onde os ecras vão aparecer
         Box(
             modifier = Modifier
                 .fillMaxSize()
                 .padding(innerPadding)
         ) {
-            // A nossa "Navegação" simples
             when (currentScreen) {
                 "home" -> {
                     // Placeholder temporário do ecrã inicial
@@ -95,13 +91,10 @@ fun MindStepApp(viewModel: MindStepViewModel) {
                     }
                 }
                 "add_record" -> {
-                    // O nosso novo ecrã brilhante
+
                     AddRecordScreen(
                         onSaveRecord = { mood, anxiety, notes ->
-                            // Envia os dados para a Base de Dados via ViewModel
                             viewModel.addRecord(mood, anxiety, notes)
-
-                            // Volta automaticamente ao ecrã inicial após guardar!
                             currentScreen = "home"
                         }
                     )

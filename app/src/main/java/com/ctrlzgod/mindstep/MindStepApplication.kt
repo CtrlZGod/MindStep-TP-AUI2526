@@ -6,8 +6,6 @@ import com.ctrlzgod.mindstep.data.local.MindStepDatabase
 
 class MindStepApplication : Application() {
 
-    // Usamos o "lazy" para que a base de dados só seja construída
-    // no exato momento em que for precisa pela primeira vez.
     val database: MindStepDatabase by lazy {
         Room.databaseBuilder(
             this,
