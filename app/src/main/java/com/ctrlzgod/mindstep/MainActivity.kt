@@ -9,7 +9,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.runtime.* // Importante para o collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,13 +19,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ctrlzgod.mindstep.data.local.MindStepDatabase
 import com.ctrlzgod.mindstep.ui.MindStepViewModel
 import com.ctrlzgod.mindstep.ui.screens.AddRecordScreen
+import com.ctrlzgod.mindstep.ui.screens.DashboardScreen // Novo Import
+import com.ctrlzgod.mindstep.ui.theme.MindStepTheme
 
 class MainActivity : ComponentActivity() {
+    @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-
-            //base de dados e viewmodel
+            // 1. Configuração da Base de Dados e ViewModel
             val context = LocalContext.current
             val database = MindStepDatabase.getDatabase(context)
             val dao = database.moodRecordDao()
@@ -35,69 +37,63 @@ class MainActivity : ComponentActivity() {
                     return MindStepViewModel(dao) as T
                 }
             }
-            val mindStepViewModel: MindStepViewModel = viewModel(factory = viewModelFactory)
+            val viewModel: MindStepViewModel = viewModel(factory = viewModelFactory)
 
-            //trigger da UI principal
-            MindStepApp(mindStepViewModel)
-        }
-    }
-}
+            // 2. A "Torneira" que ouve a base de dados em tempo real
+            val allRecords by viewModel.allRecords.collectAsState()
 
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun MindStepApp(viewModel: MindStepViewModel) {
-    var currentScreen by remember { mutableStateOf("home") }
+            // 3. Estado do ecrã atual
+            var currentScreen by remember { mutableStateOf("home") }
 
-    Scaffold(
-        topBar = {
-            TopAppBar(title = { Text("MindStep") })
-        },
-        bottomBar = {
-            BottomAppBar {
-                NavigationBarItem(
-                    selected = currentScreen == "home",
-                    onClick = { currentScreen = "home" },
-                    icon = { Icon(Icons.Default.Home, contentDescription = "Ir para o Início") },
-                    label = { Text("Início") }
-                )
-                NavigationBarItem(
-                    selected = false,
-                    onClick = {  },
-                    icon = { Icon(Icons.Default.Person, contentDescription = "Ver Perfil") },
-                    label = { Text("Perfil") }
-                )
-            }
-        },
-        floatingActionButton = {
-            if (currentScreen == "home") {
-                FloatingActionButton(onClick = { currentScreen = "add_record" }) {
-                    Icon(Icons.Default.Add, contentDescription = "Registar Humor de Hoje")
-                }
-            }
-        }
-    ) { innerPadding ->
-
-        //area onde os ecras vão aparecer
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(innerPadding)
-        ) {
-            when (currentScreen) {
-                "home" -> {
-                    // Placeholder temporário do ecrã inicial
-                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-                        Text("O teu diário está vazio. Clica no + para começar!")
-                    }
-                }
-                "add_record" -> {
-
-                    AddRecordScreen(
-                        onSaveRecord = { mood, anxiety, notes ->
-                            viewModel.addRecord(mood, anxiety, notes)
-                            currentScreen = "home"
+            MindStepTheme {
+                Scaffold(
+                    topBar = {
+                        CenterAlignedTopAppBar(title = { Text("MindStep") })
+                    },
+                    bottomBar = {
+                        BottomAppBar {
+                            NavigationBarItem(
+                                selected = currentScreen == "home",
+                                onClick = { currentScreen = "home" },
+                                icon = { Icon(Icons.Default.Home, contentDescription = "Ir para Início") },
+                                label = { Text("Início") }
+                            )
+                            NavigationBarItem(
+                                selected = false,
+                                onClick = { /* Perfil ainda não implementado */ },
+                                icon = { Icon(Icons.Default.Person, contentDescription = "Ver Perfil") },
+                                label = { Text("Perfil") }
+                            )
                         }
-                    )
+                    },
+                    floatingActionButton = {
+                        if (currentScreen == "home") {
+                            FloatingActionButton(onClick = { currentScreen = "add_record" }) {
+                                Icon(Icons.Default.Add, contentDescription = "Registar Humor de Hoje")
+                            }
+                        }
+                    }
+                ) { innerPadding ->
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding)
+                    ) {
+                        when (currentScreen) {
+                            "home" -> {
+                                // CHAMADA AO NOVO ECRÃ COM OS DADOS REAIS
+                                DashboardScreen(records = allRecords)
+                            }
+                            "add_record" -> {
+                                AddRecordScreen(
+                                    onSaveRecord = { mood, anxiety, notes ->
+                                        viewModel.addRecord(mood, anxiety, notes ?: "")
+                                        currentScreen = "home"
+                                    }
+                                )
+                            }
+                        }
+                    }
                 }
             }
         }
