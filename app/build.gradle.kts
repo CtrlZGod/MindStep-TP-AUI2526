@@ -14,7 +14,7 @@ android {
 
     defaultConfig {
         applicationId = "com.ctrlzgod.mindstep"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -66,4 +66,6 @@ dependencies {
     // Dependências para a Navegação com Jetpack Compose
     val nav_version = "2.7.7"
     implementation("androidx.navigation:navigation-compose:$nav_version")
-}
+
+    // Health Connect API
+    implementation("androidx.health.connect:connect-client:1.1.0-alpha07")}

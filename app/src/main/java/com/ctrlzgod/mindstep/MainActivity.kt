@@ -2,6 +2,7 @@ package com.ctrlzgod.mindstep
 
 import android.os.Bundle
 import androidx.activity.ComponentActivity
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
@@ -9,7 +10,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.*
-import androidx.compose.runtime.* // Importante para o collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -19,15 +20,15 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ctrlzgod.mindstep.data.local.MindStepDatabase
 import com.ctrlzgod.mindstep.ui.MindStepViewModel
 import com.ctrlzgod.mindstep.ui.screens.AddRecordScreen
-import com.ctrlzgod.mindstep.ui.screens.DashboardScreen // Novo Import
+import com.ctrlzgod.mindstep.ui.screens.DashboardScreen
 import com.ctrlzgod.mindstep.ui.theme.MindStepTheme
+import kotlinx.coroutines.launch // Importante para executar rotinas em segundo plano
 
 class MainActivity : ComponentActivity() {
     @OptIn(ExperimentalMaterial3Api::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
-            // 1. Configuração da Base de Dados e ViewModel
             val context = LocalContext.current
             val database = MindStepDatabase.getDatabase(context)
             val dao = database.moodRecordDao()
@@ -39,16 +40,46 @@ class MainActivity : ComponentActivity() {
             }
             val viewModel: MindStepViewModel = viewModel(factory = viewModelFactory)
 
-            // 2. ligacaobase de dados em tempo real
             val allRecords by viewModel.allRecords.collectAsState()
-
-            // 3. Estado do ecrã atual
             var currentScreen by remember { mutableStateOf("home") }
+
+            //PASSOS
+            // guardar o texto dos passos
+            var todaySteps by remember { mutableStateOf("A calcular...") }
+            val coroutineScope = rememberCoroutineScope()
+            val healthConnectManager = remember { com.ctrlzgod.mindstep.data.health.HealthConnectManager(context) }
+
+            val permissionLauncher = rememberLauncherForActivityResult(
+                contract = androidx.health.connect.client.PermissionController.createRequestPermissionResultContract()
+            ) { grantedPermissions ->
+                if (grantedPermissions.containsAll(healthConnectManager.permissions)) {
+                    // user aceitou -> lê os passos sem bloqueios
+                    coroutineScope.launch {
+                        val steps = healthConnectManager.readStepsToday()
+                        todaySteps = "$steps passos"
+                    }
+                } else {
+                    todaySteps = "Sem acesso"
+                }
+            }
+
+            LaunchedEffect(currentScreen) {
+                if (currentScreen == "home" && healthConnectManager.isAvailable()) {
+                    val granted = healthConnectManager.healthConnectClient.permissionController.getGrantedPermissions()
+                    if (granted.containsAll(healthConnectManager.permissions)) {
+                        val steps = healthConnectManager.readStepsToday()
+                        todaySteps = "$steps passos"
+                    } else {
+                        permissionLauncher.launch(healthConnectManager.permissions)
+                    }
+                }
+            }
 
             MindStepTheme {
                 Scaffold(
                     topBar = {
-                        CenterAlignedTopAppBar(title = { Text("MindStep") })
+                        //NÚMERO EM TEMPO REAL
+                        CenterAlignedTopAppBar(title = { Text("MindStep | $todaySteps") })
                     },
                     bottomBar = {
                         BottomAppBar {
