@@ -81,7 +81,7 @@ fun AddRecordScreen(
             value = anxietyLevel.toFloat(),
             onValueChange = {
                 anxietyLevel = it.toInt()
-                // Uma pequena vibração sempre que o valor muda para dar feedback físico
+                //sempre que o valor mudar = feedback físico
                 haptic.performHapticFeedback(HapticFeedbackType.TextHandleMove)
             },
             valueRange = 1f..5f,

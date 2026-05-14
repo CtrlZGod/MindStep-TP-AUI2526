@@ -1,17 +1,20 @@
 package com.ctrlzgod.mindstep.ui.screens
 
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import com.ctrlzgod.mindstep.data.local.MoodRecord
+import com.ctrlzgod.mindstep.ui.components.MoodCard
 
 @Composable
 fun DashboardScreen(records: List<MoodRecord>) {
-    // Aplicando Carga Cognitiva Reduzida:
-    // O ecrã adapta-se se não houver dados.
     if (records.isEmpty()) {
         Box(
             modifier = Modifier.fillMaxSize(),
@@ -20,13 +23,13 @@ fun DashboardScreen(records: List<MoodRecord>) {
             Text("O teu diário está vazio. Clica no + para começar!")
         }
     } else {
-        // Se houver dados, mostramos esta mensagem temporária.
-        // Mais à frente, vamos substituir isto pela lista de Cards!
-        Box(
+        LazyColumn(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
+            contentPadding = PaddingValues(vertical = 16.dp)
         ) {
-            Text("Sucesso! Tens ${records.size} registo(s) guardado(s).")
+            items(records) { record ->
+                MoodCard(record = record)
+            }
         }
     }
 }

@@ -39,7 +39,7 @@ class MainActivity : ComponentActivity() {
             }
             val viewModel: MindStepViewModel = viewModel(factory = viewModelFactory)
 
-            // 2. A "Torneira" que ouve a base de dados em tempo real
+            // 2. ligacaobase de dados em tempo real
             val allRecords by viewModel.allRecords.collectAsState()
 
             // 3. Estado do ecrã atual
@@ -81,7 +81,6 @@ class MainActivity : ComponentActivity() {
                     ) {
                         when (currentScreen) {
                             "home" -> {
-                                // CHAMADA AO NOVO ECRÃ COM OS DADOS REAIS
                                 DashboardScreen(records = allRecords)
                             }
                             "add_record" -> {

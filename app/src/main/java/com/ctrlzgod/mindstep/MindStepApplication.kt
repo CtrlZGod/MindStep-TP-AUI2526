@@ -10,7 +10,7 @@ class MindStepApplication : Application() {
         Room.databaseBuilder(
             this,
             MindStepDatabase::class.java,
-            "mindstep_database" // O nome do ficheiro físico que vai ficar guardado no telemóvel
+            "mindstep_database" // nome guardado no telefoen
         ).build()
     }
 }
