@@ -31,6 +31,10 @@
             </intent-filter>
         </activity>
 
+        <receiver
+            android:name=".notifications.ReminderReceiver"
+            android:exported="false" />
+
         <activity-alias
             android:name="ViewPermissionUsageActivity"
             android:exported="true"
