@@ -24,35 +24,26 @@ import com.ctrlzgod.mindstep.notifications.ReminderManager
 
 @Composable
 fun DashboardScreen(records: List<MoodRecord>) {
-    // Precisamos de saber onde estamos (o Context) para mostrar os pop-ups (Toasts) e agendar o alarme
     val context = LocalContext.current
 
-    // O mecanismo moderno do Jetpack Compose que pede autorização ao utilizador no ecrã (obrigatório no Android 13+)
     val permissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
         if (isGranted) {
-            // Se o utilizador disser "Sim", ativamos o lembrete!
             ReminderManager.scheduleReminder(context, 20, 0) // Agendado para as 20h00
             Toast.makeText(context, "Lembrete ativado para as 20:00!", Toast.LENGTH_SHORT).show()
         } else {
-            // Se disser "Não", respeitamos a decisão dele (Boa prática de Usabilidade!)
             Toast.makeText(context, "Permissão negada. Não te vamos chatear!", Toast.LENGTH_LONG).show()
         }
     }
 
-    // Usamos uma Column para empilhar o nosso novo Botão em cima da tua lista
     Column(modifier = Modifier.fillMaxSize()) {
 
-        // O nosso novo Botão para ativar o Lembrete de Água/Meditação
         Button(
             onClick = {
-                // Verificamos se o telemóvel é Android 13 ou superior
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    // Dispara o pop-up do Android a pedir permissão
                     permissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
                 } else {
-                    // Se for um Android mais antigo, não precisa de pedir permissão no ecrã, basta agendar
                     ReminderManager.scheduleReminder(context, 20, 0)
                     Toast.makeText(context, "Lembrete ativado para as 20:00!", Toast.LENGTH_SHORT).show()
                 }
@@ -69,7 +60,6 @@ fun DashboardScreen(records: List<MoodRecord>) {
             Text("Ativar Lembrete (20:00)")
         }
 
-        // --- DAQUI PARA BAIXO É O TEU CÓDIGO ORIGINAL INTACTO ---
         if (records.isEmpty()) {
             Box(
                 modifier = Modifier.fillMaxSize(),
@@ -84,7 +74,7 @@ fun DashboardScreen(records: List<MoodRecord>) {
             ) {
                 items(records) { record ->
                     MoodCard(record = record)
-                    Spacer(modifier = Modifier.height(8.dp)) // Apenas um pequeno espaço entre cartões
+                    Spacer(modifier = Modifier.height(8.dp))
                 }
             }
         }
