@@ -4,6 +4,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
+import androidx.compose.animation.AnimatedContent
+import androidx.compose.animation.core.snap
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -21,6 +27,7 @@ import com.ctrlzgod.mindstep.data.local.MindStepDatabase
 import com.ctrlzgod.mindstep.ui.MindStepViewModel
 import com.ctrlzgod.mindstep.ui.screens.AddRecordScreen
 import com.ctrlzgod.mindstep.ui.screens.DashboardScreen
+import com.ctrlzgod.mindstep.ui.screens.ProfileScreen
 import com.ctrlzgod.mindstep.ui.theme.MindStepTheme
 import kotlinx.coroutines.launch // Importante para executar rotinas em segundo plano
 
@@ -42,6 +49,8 @@ class MainActivity : ComponentActivity() {
 
             val allRecords by viewModel.allRecords.collectAsState()
             var currentScreen by remember { mutableStateOf("home") }
+            // Controlo de animações (acessibilidade — sensibilidade vestibular)
+            var reduceAnimations by remember { mutableStateOf(false) }
 
             //PASSOS
             // guardar o texto dos passos
@@ -90,8 +99,8 @@ class MainActivity : ComponentActivity() {
                                 label = { Text("Início") }
                             )
                             NavigationBarItem(
-                                selected = false,
-                                onClick = { /* Perfil ainda não implementado */ },
+                                selected = currentScreen == "profile",
+                                onClick = { currentScreen = "profile" },
                                 icon = { Icon(Icons.Default.Person, contentDescription = "Ver Perfil") },
                                 label = { Text("Perfil") }
                             )
@@ -110,17 +119,39 @@ class MainActivity : ComponentActivity() {
                             .fillMaxSize()
                             .padding(innerPadding)
                     ) {
-                        when (currentScreen) {
-                            "home" -> {
-                                DashboardScreen(records = allRecords)
-                            }
-                            "add_record" -> {
-                                AddRecordScreen(
-                                    onSaveRecord = { mood, anxiety, notes ->
-                                        viewModel.addRecord(mood, anxiety, notes ?: "")
-                                        currentScreen = "home"
-                                    }
-                                )
+                        AnimatedContent(
+                            targetState = currentScreen,
+                            transitionSpec = {
+                                if (reduceAnimations) {
+                                    // Transição instantânea quando as animações estão reduzidas
+                                    fadeIn(animationSpec = snap()) togetherWith
+                                        fadeOut(animationSpec = snap())
+                                } else {
+                                    fadeIn(animationSpec = tween(300)) togetherWith
+                                        fadeOut(animationSpec = tween(300))
+                                }
+                            },
+                            label = "screen_transition"
+                        ) { screen ->
+                            when (screen) {
+                                "home" -> {
+                                    DashboardScreen(records = allRecords)
+                                }
+                                "add_record" -> {
+                                    AddRecordScreen(
+                                        onSaveRecord = { mood, anxiety, notes ->
+                                            viewModel.addRecord(mood, anxiety, notes ?: "")
+                                            currentScreen = "home"
+                                        }
+                                    )
+                                }
+                                "profile" -> {
+                                    ProfileScreen(
+                                        records = allRecords,
+                                        reduceAnimations = reduceAnimations,
+                                        onReduceAnimationsChange = { reduceAnimations = it }
+                                    )
+                                }
                             }
                         }
                     }
