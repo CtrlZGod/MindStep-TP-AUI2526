@@ -20,6 +20,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.ctrlzgod.mindstep.data.local.MoodRecord
 import com.ctrlzgod.mindstep.ui.components.MoodCard
+import com.ctrlzgod.mindstep.ui.components.MoodChart
 import com.ctrlzgod.mindstep.notifications.ReminderManager
 
 @Composable
@@ -72,6 +73,10 @@ fun DashboardScreen(records: List<MoodRecord>) {
                 modifier = Modifier.fillMaxSize(),
                 contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp)
             ) {
+                item {
+                    MoodChart(records = records)
+                    Spacer(modifier = Modifier.height(16.dp))
+                }
                 items(records) { record ->
                     MoodCard(record = record)
                     Spacer(modifier = Modifier.height(8.dp))
