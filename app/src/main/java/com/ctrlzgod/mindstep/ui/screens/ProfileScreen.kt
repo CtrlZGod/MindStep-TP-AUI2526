@@ -25,13 +25,6 @@ import androidx.compose.ui.unit.dp
 import com.ctrlzgod.mindstep.data.local.MoodRecord
 import com.ctrlzgod.mindstep.util.ExportHelper
 
-/**
- * Ecrã de Perfil / Definições.
- * Aloja requisitos de acessibilidade do enunciado:
- *  - Controlo de animações (reduzir/desativar transições — sensibilidade vestibular).
- *  - Locução (feedback por voz) para apoiar utilizadores com deficiência visual.
- *  - Exportação de dados (resumo textual partilhável).
- */
 @Composable
 fun ProfileScreen(
     records: List<MoodRecord>,
@@ -51,7 +44,7 @@ fun ProfileScreen(
         Text(text = "Definições", style = MaterialTheme.typography.headlineMedium)
         Spacer(modifier = Modifier.height(24.dp))
 
-        // --- Acessibilidade: controlo de animações ---
+        // controlo de animações
         Text(text = "Acessibilidade", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -111,7 +104,7 @@ fun ProfileScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
-        // --- Exportação de dados ---
+        // exportação de dados
         Text(text = "Dados", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(8.dp))
 
