@@ -27,15 +27,18 @@ import com.ctrlzgod.mindstep.util.ExportHelper
 
 /**
  * Ecrã de Perfil / Definições.
- * Aloja dois requisitos do enunciado:
+ * Aloja requisitos de acessibilidade do enunciado:
  *  - Controlo de animações (reduzir/desativar transições — sensibilidade vestibular).
+ *  - Locução (feedback por voz) para apoiar utilizadores com deficiência visual.
  *  - Exportação de dados (resumo textual partilhável).
  */
 @Composable
 fun ProfileScreen(
     records: List<MoodRecord>,
     reduceAnimations: Boolean,
-    onReduceAnimationsChange: (Boolean) -> Unit
+    onReduceAnimationsChange: (Boolean) -> Unit,
+    voiceFeedback: Boolean,
+    onVoiceFeedbackChange: (Boolean) -> Unit
 ) {
     val context = LocalContext.current
 
@@ -73,6 +76,34 @@ fun ProfileScreen(
                     onCheckedChange = onReduceAnimationsChange,
                     modifier = Modifier.semantics {
                         contentDescription = "Reduzir animações de transição"
+                    }
+                )
+            }
+        }
+
+        Spacer(modifier = Modifier.height(12.dp))
+
+        Card(modifier = Modifier.fillMaxWidth()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text(text = "Locução (feedback por voz)", style = MaterialTheme.typography.bodyLarge)
+                    Text(
+                        text = "A app anuncia ações e lê em voz alta os resumos e as notas.",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+                Switch(
+                    checked = voiceFeedback,
+                    onCheckedChange = onVoiceFeedbackChange,
+                    modifier = Modifier.semantics {
+                        contentDescription = "Ativar feedback por voz"
                     }
                 )
             }

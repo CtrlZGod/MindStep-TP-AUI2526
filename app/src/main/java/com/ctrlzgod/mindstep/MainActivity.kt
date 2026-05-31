@@ -24,11 +24,14 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ctrlzgod.mindstep.data.local.MindStepDatabase
+import com.ctrlzgod.mindstep.data.local.MoodRecord
 import com.ctrlzgod.mindstep.ui.MindStepViewModel
 import com.ctrlzgod.mindstep.ui.screens.AddRecordScreen
 import com.ctrlzgod.mindstep.ui.screens.DashboardScreen
 import com.ctrlzgod.mindstep.ui.screens.ProfileScreen
 import com.ctrlzgod.mindstep.ui.theme.MindStepTheme
+import com.ctrlzgod.mindstep.util.SettingsManager
+import com.ctrlzgod.mindstep.util.rememberTtsController
 import kotlinx.coroutines.launch // Importante para executar rotinas em segundo plano
 
 class MainActivity : ComponentActivity() {
@@ -49,8 +52,14 @@ class MainActivity : ComponentActivity() {
 
             val allRecords by viewModel.allRecords.collectAsState()
             var currentScreen by remember { mutableStateOf("home") }
-            // Controlo de animações
-            var reduceAnimations by remember { mutableStateOf(false) }
+
+            val settings = remember { SettingsManager(context) }
+            val tts = rememberTtsController()
+            // Preferências de acessibilidade, persistidas entre arranques
+            var reduceAnimations by remember { mutableStateOf(settings.reduceAnimations) }
+            var voiceFeedback by remember { mutableStateOf(settings.voiceFeedback) }
+            // Registo em edição (null = a criar um novo)
+            var editingRecord by remember { mutableStateOf<MoodRecord?>(null) }
 
             //PASSOS
             // guardar o texto dos passos
@@ -84,6 +93,20 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            // Locução: anuncia o ecrã atual quando o feedback por voz está ativo
+            LaunchedEffect(currentScreen) {
+                if (voiceFeedback) {
+                    val name = when (currentScreen) {
+                        "home" -> "Início"
+                        "add_record" -> "Novo registo"
+                        "edit" -> "Editar registo"
+                        "profile" -> "Definições"
+                        else -> ""
+                    }
+                    if (name.isNotEmpty()) tts.speak(name)
+                }
+            }
+
             MindStepTheme {
                 Scaffold(
                     topBar = {
@@ -108,7 +131,10 @@ class MainActivity : ComponentActivity() {
                     },
                     floatingActionButton = {
                         if (currentScreen == "home") {
-                            FloatingActionButton(onClick = { currentScreen = "add_record" }) {
+                            FloatingActionButton(onClick = {
+                                editingRecord = null
+                                currentScreen = "add_record"
+                            }) {
                                 Icon(Icons.Default.Add, contentDescription = "Registar Humor de Hoje")
                             }
                         }
@@ -134,21 +160,61 @@ class MainActivity : ComponentActivity() {
                         ) { screen ->
                             when (screen) {
                                 "home" -> {
-                                    DashboardScreen(records = allRecords)
+                                    DashboardScreen(
+                                        records = allRecords,
+                                        onRecordClick = { record ->
+                                            editingRecord = record
+                                            currentScreen = "edit"
+                                        },
+                                        onDeleteRecords = { ids -> viewModel.deleteRecords(ids) },
+                                        voiceFeedback = voiceFeedback,
+                                        speak = { tts.speak(it) }
+                                    )
                                 }
                                 "add_record" -> {
                                     AddRecordScreen(
                                         onSaveRecord = { mood, anxiety, notes ->
-                                            viewModel.addRecord(mood, anxiety, notes ?: "")
+                                            viewModel.addRecord(mood, anxiety, notes)
+                                            if (voiceFeedback) tts.speak("Registo guardado")
                                             currentScreen = "home"
-                                        }
+                                        },
+                                        speak = { tts.speak(it) }
                                     )
+                                }
+                                "edit" -> {
+                                    val rec = editingRecord
+                                    if (rec != null) {
+                                        AddRecordScreen(
+                                            existingRecord = rec,
+                                            onSaveRecord = { mood, anxiety, notes ->
+                                                viewModel.updateRecord(
+                                                    rec.copy(
+                                                        moodLevel = mood,
+                                                        anxietyLevel = anxiety,
+                                                        notes = notes
+                                                    )
+                                                )
+                                                if (voiceFeedback) tts.speak("Registo atualizado")
+                                                editingRecord = null
+                                                currentScreen = "home"
+                                            },
+                                            speak = { tts.speak(it) }
+                                        )
+                                    }
                                 }
                                 "profile" -> {
                                     ProfileScreen(
                                         records = allRecords,
                                         reduceAnimations = reduceAnimations,
-                                        onReduceAnimationsChange = { reduceAnimations = it }
+                                        onReduceAnimationsChange = {
+                                            reduceAnimations = it
+                                            settings.reduceAnimations = it
+                                        },
+                                        voiceFeedback = voiceFeedback,
+                                        onVoiceFeedbackChange = {
+                                            voiceFeedback = it
+                                            settings.voiceFeedback = it
+                                        }
                                     )
                                 }
                             }
