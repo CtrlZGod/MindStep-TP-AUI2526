@@ -25,21 +25,25 @@ import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.ctrlzgod.mindstep.data.local.MoodRecord
 import com.ctrlzgod.mindstep.util.HapticHelper
 import java.util.Locale
 
 @Composable
 fun AddRecordScreen(
-    onSaveRecord: (mood: Int, anxiety: Int, notes: String) -> Unit
+    onSaveRecord: (mood: Int, anxiety: Int, notes: String) -> Unit,
+    existingRecord: MoodRecord? = null,
+    speak: (String) -> Unit = {}
 ) {
-    var moodLevel by remember { mutableIntStateOf(3) }
-    var anxietyLevel by remember { mutableIntStateOf(3) }
-    var notes by remember { mutableStateOf("") }
+    val isEditing = existingRecord != null
+    var moodLevel by remember { mutableIntStateOf(existingRecord?.moodLevel ?: 3) }
+    var anxietyLevel by remember { mutableIntStateOf(existingRecord?.anxietyLevel ?: 3) }
+    var notes by remember { mutableStateOf(existingRecord?.notes ?: "") }
 
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
 
-    // Reconhecimento de voz - input por voz
+    // Reconhecimento de voz: preenche as notas por ditado (input por voz)
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -69,7 +73,10 @@ fun AddRecordScreen(
     ) {
 
         //Humor
-        Text(text = "Como te sentes hoje?", style = MaterialTheme.typography.headlineMedium)
+        Text(
+            text = if (isEditing) "Editar registo" else "Como te sentes hoje?",
+            style = MaterialTheme.typography.headlineMedium
+        )
         Spacer(modifier = Modifier.height(24.dp))
 
         Row(
@@ -160,6 +167,17 @@ fun AddRecordScreen(
             Text("🎙  Ditar nota por voz")
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+
+        OutlinedButton(
+            onClick = { speak(if (notes.isBlank()) "Sem notas neste registo." else notes) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .semantics { contentDescription = "Ler nota em voz alta" }
+        ) {
+            Text("🔊  Ouvir nota")
+        }
+
         Spacer(modifier = Modifier.weight(1f))
 
         //Guardar
@@ -172,7 +190,10 @@ fun AddRecordScreen(
                 .fillMaxWidth()
                 .height(56.dp)
         ) {
-            Text("Guardar Registo", style = MaterialTheme.typography.titleMedium)
+            Text(
+                text = if (isEditing) "Guardar alterações" else "Guardar Registo",
+                style = MaterialTheme.typography.titleMedium
+            )
         }
     }
 }

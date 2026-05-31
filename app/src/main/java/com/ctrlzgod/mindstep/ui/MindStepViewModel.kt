@@ -32,4 +32,21 @@ class MindStepViewModel(private val dao: MoodRecordDao) : ViewModel() {
             }
         }
     }
+
+    fun updateRecord(record: MoodRecord) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                dao.updateRecord(record)
+            }
+        }
+    }
+
+    fun deleteRecords(ids: List<Int>) {
+        if (ids.isEmpty()) return
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                dao.deleteByIds(ids)
+            }
+        }
+    }
 }
