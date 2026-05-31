@@ -10,7 +10,7 @@
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.VIBRATE" />
 
-    <!-- Necessário para o reconhecimento de voz ser visível no Android 11+ -->
+    <!-- Android 11+ requiriment -->
     <queries>
         <intent>
             <action android:name="android.speech.RecognitionService" />
