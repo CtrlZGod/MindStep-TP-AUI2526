@@ -39,7 +39,7 @@ fun AddRecordScreen(
     val haptic = LocalHapticFeedback.current
     val context = LocalContext.current
 
-    // Reconhecimento de voz: preenche as notas por ditado (input por voz)
+    // Reconhecimento de voz - input por voz
     val speechLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -106,7 +106,6 @@ fun AddRecordScreen(
             value = anxietyLevel.toFloat(),
             onValueChange = {
                 anxietyLevel = it.toInt()
-                // intensidade da vibração proporcional ao nível de ansiedade
                 HapticHelper.vibrateForAnxiety(context, anxietyLevel)
             },
             valueRange = 1f..5f,
@@ -166,7 +165,6 @@ fun AddRecordScreen(
         //Guardar
         Button(
             onClick = {
-                // vibração de sucesso (objetivo atingido: registo guardado)
                 HapticHelper.vibrateSuccess(context)
                 onSaveRecord(moodLevel, anxietyLevel, notes)
             },

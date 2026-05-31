@@ -49,7 +49,7 @@ class MainActivity : ComponentActivity() {
 
             val allRecords by viewModel.allRecords.collectAsState()
             var currentScreen by remember { mutableStateOf("home") }
-            // Controlo de animações (acessibilidade — sensibilidade vestibular)
+            // Controlo de animações
             var reduceAnimations by remember { mutableStateOf(false) }
 
             //PASSOS
@@ -123,7 +123,6 @@ class MainActivity : ComponentActivity() {
                             targetState = currentScreen,
                             transitionSpec = {
                                 if (reduceAnimations) {
-                                    // Transição instantânea quando as animações estão reduzidas
                                     fadeIn(animationSpec = snap()) togetherWith
                                         fadeOut(animationSpec = snap())
                                 } else {

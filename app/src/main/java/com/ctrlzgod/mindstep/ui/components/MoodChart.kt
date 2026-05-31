@@ -35,7 +35,7 @@ private val PT = Locale("pt", "PT")
 
 /**
  * Agrega os registos dos últimos 7 dias (incluindo hoje) por dia,
- * calculando a média do nível de humor (1..5) de cada dia.
+ * calculando a média do nível de humor (1 a 5) de cada dia.
  * Devolve sempre 7 entradas (uma por dia), com NaN nos dias sem registos.
  */
 fun computeWeeklyMood(
@@ -153,7 +153,6 @@ fun MoodChart(
                 )
             }
 
-            // Pontos válidos (dias com registos)
             val points = daily.mapIndexedNotNull { i, d ->
                 if (d.avgMood.isNaN()) {
                     null
@@ -164,7 +163,6 @@ fun MoodChart(
                 }
             }
 
-            // Linha que une os pontos
             for (i in 0 until points.size - 1) {
                 drawLine(
                     color = lineColor,
@@ -173,7 +171,6 @@ fun MoodChart(
                     strokeWidth = 6f
                 )
             }
-            // Marcadores dos pontos
             points.forEach { p ->
                 drawCircle(color = lineColor, radius = 8f, center = p)
             }
