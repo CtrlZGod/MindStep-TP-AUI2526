@@ -8,12 +8,14 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.heading
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.unit.dp
 import com.ctrlzgod.mindstep.data.local.MoodRecord
@@ -35,7 +37,7 @@ private val PT = Locale("pt", "PT")
 
 /**
  * Agrega os registos dos últimos 7 dias (incluindo hoje) por dia,
- * calculando a média do nível de humor (1 a 5) de cada dia.
+ * calculando a média do nível de humor (1..5) de cada dia.
  * Devolve sempre 7 entradas (uma por dia), com NaN nos dias sem registos.
  */
 fun computeWeeklyMood(
@@ -111,7 +113,8 @@ fun buildMoodTrendDescription(daily: List<DailyMood>): String {
 @Composable
 fun MoodChart(
     records: List<MoodRecord>,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onSpeak: ((String) -> Unit)? = null
 ) {
     val daily = remember(records) { computeWeeklyMood(records) }
     val description = remember(daily) { buildMoodTrendDescription(daily) }
@@ -124,7 +127,8 @@ fun MoodChart(
         Text(
             text = "Tendência do humor (últimos 7 dias)",
             style = MaterialTheme.typography.titleMedium,
-            color = onSurfaceVariant
+            color = onSurfaceVariant,
+            modifier = Modifier.semantics { heading() }
         )
         Spacer(modifier = Modifier.height(8.dp))
 
@@ -182,5 +186,11 @@ fun MoodChart(
             style = MaterialTheme.typography.bodyMedium,
             color = onSurfaceVariant
         )
+
+        if (onSpeak != null) {
+            TextButton(onClick = { onSpeak(description) }) {
+                Text("🔊  Ouvir resumo")
+            }
+        }
     }
 }
